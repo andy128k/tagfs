@@ -8,7 +8,7 @@ Homepage: <insert the upstream URL, if relevant>
 
 Package: tagfs
 Architecture: any
-Depends: libglib2.0-0 (>= 2.12), libgtk2.0-0 (>= 2.8), libnautilus-extension1 (>= 2.18)
+Depends: libglib2.0-0 (>= 2.12), libgtk2.0-0 (>= 2.8), libnautilus-extension1 (>= 2.18), libmagic1, sqlite3, djvulibre-bin, pdftk
 Description: Filesystem orgainized by tags (metainfo)
  Filesystem (FUSE module) orgainized by tags (metainfo).
  .

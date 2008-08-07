@@ -7,14 +7,9 @@
 
 #include "helpers.h"
 
-static gboolean pdf_check_file(const gchar* filename)
+static gboolean pdf_check_file(const gchar* filename, const gchar* mime)
 {
-  gchar* type = get_suffix(filename);
-  if (!type)
-    return FALSE;
-  gboolean result = !strcmp(type, "pdf");
-  g_free(type);
-  return result;
+  return !strcmp(mime, "application/pdf");
 }
 
 /*
@@ -66,7 +61,7 @@ static void read_callback(void* user_data, gchar* line)
     }
 }
 
-static GData* pdf_get_metainfo(const gchar* filename)
+static GData* pdf_get_metainfo(const gchar* filename, GError** error)
 {
   gchar* cmdline;
 

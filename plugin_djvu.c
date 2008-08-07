@@ -7,17 +7,14 @@
 
 #include "helpers.h"
 
-static gboolean djvu_check_file(const gchar* filename)
+static gboolean djvu_check_file(const gchar* filename, const gchar* mime)
 {
-  gchar* type = get_suffix(filename);
-  if (!type)
-    return FALSE;
-  gboolean result = !strcmp(type, "djvu");
-  g_free(type);
-  return result;
+  return !strcmp(mime, "image/vnd.djvu")
+    || !strcmp(mime, "image/x.djvu")
+    || !strcmp(mime, "image/x-djvu");
 }
 
-static GData* djvu_get_metainfo(const gchar *filename)
+static GData* djvu_get_metainfo(const gchar *filename, GError** error)
 {
   FILE* pipe;
   GIOChannel* channel;
@@ -36,11 +33,15 @@ static GData* djvu_get_metainfo(const gchar *filename)
   if (!pipe)
     {
       g_free(cmdline);
-      return result;
+      g_set_error(error,
+		  g_quark_from_static_string("plugin_djvu"),
+		  1,
+		  "Pipe error.");
+      return NULL;
     }
 
   channel = g_io_channel_unix_new(fileno(pipe));
-    
+
   while (TRUE)
     {
       gchar* line;

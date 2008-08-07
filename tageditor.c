@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <gtk/gtk.h>
+#include <magic.h>
 #include "core.h"
 
 int main(int argc, char** argv)
@@ -32,10 +33,36 @@ int main(int argc, char** argv)
   gtk_window_set_default_size(window, 400, 300);
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-  GtkWidget* page = get_page(filename);
-  if (page == NULL)
+  const gchar* mime = NULL;
+  {
+    magic_t magic;
+
+    magic = magic_open(MAGIC_MIME_TYPE);
+    g_assert(magic != NULL);
+
+    int magic_load_result = magic_load(magic, NULL);
+    g_assert(magic_load_result == 0);
+
+    mime = magic_file(magic, filename);
+    if (mime == NULL)
+      {
+	fprintf(stderr, "Error: Can't detect mime type (%s).\n", magic_error(magic));
+	magic_close(magic);
+	exit(1);
+      }
+
+    magic_close(magic);
+  }
+
+  GError* error = NULL;
+  GtkWidget* page = get_page(filename, mime, &error);
+  if (error != NULL)
     {
-      fprintf(stderr, "Error: Can't create page.\n");
+      fprintf(stderr,
+	      "Error: Can't create page.\ndomain: %s\nmessage: %s\n",
+	      g_quark_to_string(error->domain),
+	      error->message);
+      g_error_free(error);
       exit(1);
     }
 

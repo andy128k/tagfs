@@ -3,6 +3,7 @@
 #include <string.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <magic.h>
 
 #include "core.h"
 
@@ -173,24 +174,34 @@ static void append_to_list_store(GQuark key_id, gpointer data, gpointer user_dat
 		     -1);
 }
 
-GtkWidget* get_page(const gchar* filename)
+GtkWidget* get_page(const gchar* filename, const gchar* mime, GError** error)
 {
   PluginInterface* plugin = NULL;
 
   int i;
   for (i = 0; i < PLUGINS_COUNT; ++i)
-    if (s_plugins[i]->check_file(filename))
+    if (s_plugins[i]->check_file(filename, mime))
       {
 	plugin = s_plugins[i];
 	break;
       }
 
   if (plugin == NULL)
-    return NULL; // unsupported file type
+    {
+      g_set_error(error,
+		  g_quark_from_static_string("core"),
+		  1,
+		  "Unsupported file type (%s).", mime);
+      return NULL;
+    }
 
-  GData* metainfo = plugin->get_metainfo(filename);
-  if (metainfo == NULL)
-    return NULL; // can't get metainfo
+  GError* metainfo_error = NULL;
+  GData* metainfo = plugin->get_metainfo(filename, &metainfo_error);
+  if (metainfo_error != NULL)
+    {
+      g_propagate_error(error, metainfo_error);
+      return NULL;
+    }
 
   GtkListStore* store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
   g_datalist_foreach(&metainfo, append_to_list_store, store);

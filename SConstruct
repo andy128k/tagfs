@@ -12,12 +12,14 @@ plugins = [
 def fuse():
     env2 = env.Clone()
     env2.ParseConfig('pkg-config --cflags --libs fuse sqlite3')
+    env2.MergeFlags('-lmagic')
     helpers = env2.Object('helpers.fuse.o', 'helpers.c')
     env2.Program('mount.tagfs', ['mount-tagfs.c'] + helpers + plugins)
 
 def editor():
     env2 = env.Clone()
     env2.ParseConfig('pkg-config --cflags --libs gtk+-2.0')
+    env2.MergeFlags('-lmagic')
     helpers = env2.Object('helpers.edit.o', 'helpers.c')
     env2.Program('tageditor', ['tageditor.c', 'core.c'] + helpers + plugins)
 

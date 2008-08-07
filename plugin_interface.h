@@ -5,8 +5,8 @@
 
 typedef struct tagPluginInterface
 {
-  gboolean (*check_file)(const gchar* filename);
-  GData* (*get_metainfo)(const gchar* filename);
+  gboolean (*check_file)(const gchar* filename, const gchar* mime);
+  GData* (*get_metainfo)(const gchar* filename, GError** error);
   void (*set_metainfo)(const gchar* filename, GData* metainfo);
 } PluginInterface;
 

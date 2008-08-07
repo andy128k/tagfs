@@ -3,6 +3,6 @@
 
 #include <gtk/gtk.h>
 
-GtkWidget* get_page(const gchar* filename);
+GtkWidget* get_page(const gchar* filename, const gchar* mime, GError** error);
 
 #endif

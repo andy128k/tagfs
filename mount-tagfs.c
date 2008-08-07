@@ -36,11 +36,13 @@
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <sqlite3.h>
+#include <magic.h>
 
 #include "plugin_interface.h"
 #include "helpers.h"
 
 static sqlite3* db = NULL;
+static magic_t magic;
 #define MAXDIGITS 15
 
 static gint sql_exec(const char* sql)
@@ -778,12 +780,15 @@ static void get_attrs(const char* name, const char* path)
   GData* metainfo;
   g_datalist_init(&metainfo);
 
+  const gchar* mime = magic_file(magic, name);
+
   gint i;
   for (i = 0; i < PLUGINS_COUNT; ++i)
     {
-      if (s_plugins[i]->check_file(path))
+      if (s_plugins[i]->check_file(path, mime))
 	{
-	  metainfo = s_plugins[i]->get_metainfo(path);
+	  metainfo = s_plugins[i]->get_metainfo(path, NULL);
+	  // print error??
 	  break;
 	}
     }
@@ -888,6 +893,12 @@ static void create_db()
 
 int main(int argc, char *argv[])
 {
+  magic = magic_open(MAGIC_MIME_TYPE);
+  g_assert(magic != NULL);
+
+  int magic_load_result = magic_load(magic, NULL);
+  g_assert(magic_load_result == 0);
+
   struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
   gchar* root = NULL;
   if (fuse_opt_parse(&args, &root, NULL, opt_process) == -1)
@@ -914,6 +925,8 @@ int main(int argc, char *argv[])
 
   syslog(LOG_INFO, "Exiting");
   closelog();
+
+  magic_close(magic);
 
   return result;
 }

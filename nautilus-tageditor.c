@@ -37,8 +37,11 @@ static GList* get_pages(NautilusPropertyPageProvider* provider, GList* files)
   if (filename == NULL)
     return NULL;
 
-  GtkWidget* page = get_page(filename);
+  gchar* mime = nautilus_file_info_get_mime_type(file);
+
+  GtkWidget* page = get_page(filename, mime, NULL);
   g_free(filename);
+  g_free(mime);
 
   if (page == NULL)
     return NULL;
