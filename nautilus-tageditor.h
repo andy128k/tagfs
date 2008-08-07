@@ -18,7 +18,6 @@ struct _MetainfoNautilusExtensionClass {
   GObjectClass parent;
 };
 
-/* used by MAMAN_TYPE_BAR */
 GType metainfo_nautilus_extension_get_type(void);
 
 /*
